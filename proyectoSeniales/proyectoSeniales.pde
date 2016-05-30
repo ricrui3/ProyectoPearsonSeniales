@@ -1,10 +1,12 @@
 // Processing Code for Example 1
 import processing.serial.*;
 
+import org.apache.commons.math3.stat.correlation.PearsonsCorrelation;
+
 Serial arduinoPort;
-IntList audio1;
-IntList audio2;
 int numeroDeMuestras = 1200;
+double[] audio1;
+double[] audio2;
 int countAudio1 = 0;
 int countAudio2 = 0;
 int a1ButX, a1ButY;
@@ -24,25 +26,26 @@ String stringButton2 = "Presione aqui para tomar la muestra 2";
 
 void setup()
 {
+  // sleep();
   //------Inicializacion de variables-----
   PImage img;
-  img = loadImage("smallOmnisphere1.png");
-  audio1 = new IntList();
-  audio2 = new IntList();
+  img = loadImage("smallOmnisphere2.png");
+  audio1 = new double[numeroDeMuestras];
+  audio2 = new double[numeroDeMuestras];
   a1ButX = a2ButX = 200;
-  a1ButY = 550;
-  a2ButY = 650;
+  a1ButY = 400;
+  a2ButY = 500;
   //--------------------------------------
 
   //------Interfaz------------------------
-  size(800, 800);
+  size(800, 600);
   background(img);
   noStroke();
   //--------------------------------------
 
   println(Serial.list());
-  arduinoPort = new Serial(this, Serial.list()[0], 9600);
-  arduinoPort.bufferUntil('\n');
+  //arduinoPort = new Serial(this, Serial.list()[0], 9600);
+  //arduinoPort.bufferUntil('\n');
 }
 
 void draw()
@@ -140,13 +143,20 @@ boolean overA2Button(int x, int y, int width, int height) {
 void serialEvent(Serial arduinoPort)
 {
   String rawInput = arduinoPort.readStringUntil('\n');
-  int rawVal = int(trim(rawInput));
+  double rawVal = int(trim(rawInput));
+
 
   if (leyendoA1 == true) {
-    audio1.append(rawVal);
+    if (rawVal != 0.0) {
+      audio1[countAudio1] = rawVal;
+      audio1[countAudio1] = rawVal;
+    }
   }
   if (leyendoA2 == true) {
-    audio2.append(rawVal);
+    if (rawVal != 0.0) {
+      audio2[countAudio1] = rawVal;
+      audio2[countAudio1] = rawVal;
+    }
   }
   countAudio1++;
   //if (leyendoA1 == true) {
@@ -165,6 +175,24 @@ void serialEvent(Serial arduinoPort)
     if (leyendoA2 == true) {
       stringButton2 = "LEIDO";
       leyendoA2 = false;
+      correlacionPearson();
     }
   }
+}
+
+void correlacionPearson() {
+  println("Muestra1");
+  for (double row : audio1) {
+    print(row);
+    print(" ");
+  }
+  println("Muestra2");
+  println(" ");
+  for (double row : audio2) {
+    print(row);
+    print(" ");
+  }
+  println("fin");
+  double corr= new PearsonsCorrelation().correlation(audio1, audio2);
+  println(corr);
 }
